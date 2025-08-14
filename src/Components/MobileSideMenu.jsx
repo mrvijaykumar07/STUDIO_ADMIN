@@ -1,0 +1,92 @@
+import React from "react";
+import { NavLink } from "react-router-dom";
+import {
+  FaUser,
+  FaTachometerAlt,
+  FaAddressBook,
+  FaUsers,
+  FaHandshake,
+  FaMoneyBillWave,
+  FaQrcode,
+  FaChartLine,
+  FaUserCog,
+  FaCog,
+} from "react-icons/fa";
+
+const MobileSideMenu = ({ onClose }) => {
+  const isLoggedIn = true;
+  const currentUser = {
+    name: "FM Studio",
+    email: "FMmanagement@gmail.com",
+  };
+  const profileImage = null;
+
+  const menuItems = [
+    { name: "Dashboard", icon: <FaTachometerAlt />, path: "/" },
+    { name: "Lead Management", icon: <FaAddressBook />, path: "/lead-management" },
+    { name: "Client & Events", icon: <FaUsers />, path: "/client-events" },
+    { name: "Agreements", icon: <FaHandshake />, path: "/agreements" },
+    { name: "Payments", icon: <FaMoneyBillWave />, path: "/payments" },
+    { name: "QR Photo Sharing", icon: <FaQrcode />, path: "/qr-photo-sharing" },
+    { name: "Analytics", icon: <FaChartLine />, path: "/analytics" },
+    { name: "User Management", icon: <FaUserCog />, path: "/user-management" },
+    { name: "Settings", icon: <FaCog />, path: "/settings" },
+  ];
+
+  return (
+   <div className="flex flex-col h-full w-full overflow-x-hidden">
+  {/* Profile */}
+  <div className="p-6 bg-gradient-to-r from-[#958fa5] to-[#9b9d9d] text-white shadow-md flex flex-col items-center w-full">
+    <div className="w-20 h-20 mb-3 bg-white rounded-full flex items-center justify-center overflow-hidden shadow-md">
+      {profileImage ? (
+        <img src={profileImage} alt="" className="w-full h-full object-cover rounded-full" />
+      ) : (
+        <FaUser size={40} className="text-black" />
+      )}
+    </div>
+    {isLoggedIn ? (
+      <>
+        <h2 className="font-semibold text-base">{currentUser?.name}</h2>
+        <p className="text-sm">{currentUser?.email}</p>
+      </>
+    ) : (
+      <button className="text-base font-semibold underline">Login / Signup</button>
+    )}
+  </div>
+
+  {/* Menu */}
+  <div className="flex-1 overflow-y-auto p-3 space-y-1 w-full">
+    {menuItems.map((item) => (
+      <NavLink
+        key={item.name}
+        to={item.path}
+        onClick={onClose}
+        className={({ isActive }) =>
+          `flex items-center gap-1.5 px-2 py-2 rounded text-sm w-full ${
+            isActive ? "bg-pink-500 text-white" : "hover:bg-pink-100"
+          }`
+        }
+      >
+        {item.icon} <span>{item.name}</span>
+      </NavLink>
+    ))}
+  </div>
+
+  {/* Logout */}
+  <div className="p-3 border-t w-full">
+    <button
+      className="w-full bg-pink-600 text-white py-2 rounded text-sm"
+      onClick={() => {
+        console.log("Logout clicked");
+        onClose();
+      }}
+    >
+      Logout
+    </button>
+  </div>
+</div>
+
+  );
+};
+
+export default MobileSideMenu;
