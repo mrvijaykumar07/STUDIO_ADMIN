@@ -146,7 +146,7 @@ const EventCalendar = ({ startMonth = new Date().getMonth() + 1, startYear = new
           setTooltipPos({ top: rect.top, left: rect.left + rect.width / 2 });
         }}
         onMouseLeave={() => setHoveredDate(null)}
-        className={`relative border rounded-lg w-9 md:w-full h-10 flex-1 flex flex-col items-center justify-center text-xs cursor-pointer transition-all
+        className={`relative border rounded-lg w-9 md:w-12 h-10 flex-1 flex flex-col items-center justify-center text-xs cursor-pointer transition-all
           ${dayEvents.length > 0 ? "bg-pink-100 border-pink-300" : "bg-gray-100 hover:bg-gray-200"}`}
       >
         <span className="font-semibold">{day.getDate()}</span>
@@ -154,7 +154,7 @@ const EventCalendar = ({ startMonth = new Date().getMonth() + 1, startYear = new
         {dayEvents.length > 0 && (
           <div className="mt-1 flex flex-wrap justify-center gap-0.5">
             {dayEvents.map((_, idx) => (
-              <div key={idx} className="md:w-2 md:h-2 w-1 h-1 rounded-full bg-pink-600"></div>
+              <div key={idx} className="md:w-1.5 md:h-1.5 w-1 h-1 rounded-full bg-pink-600"></div>
             ))}
           </div>
         )}

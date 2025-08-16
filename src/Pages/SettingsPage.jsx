@@ -93,7 +93,7 @@ const SettingsPage = () => {
 
       {/* Tabs */}
       <nav className="flex gap-6 border-b border-gray-300 text-gray-700 font-semibold overflow-x-auto pb-1 w-full">
-        {["general", "branding", "notifications",  "billing"].map(
+        {["general", "notifications",  "billing"].map(
           (tab) => (
             <button
               key={tab}
@@ -115,94 +115,132 @@ const SettingsPage = () => {
         {/* General Tab */}
         {activeTab === "general" && (
           <>
-            {/* Studio Info Card */}
-            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md space-y-4">
-              <h2 className="text-lg sm:text-xl font-semibold">Studio Information</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 min-w-0">
-                {Object.keys(tempStudioInfo).map((key) => (
-                  <div key={key} className="min-w-0">
-                    <label className="font-semibold block mb-1 capitalize">
-                      {key}
-                    </label>
-                    <input
-                      type="text"
-                      value={tempStudioInfo[key]}
-                      onChange={(e) =>
-                        setTempStudioInfo({
-                          ...tempStudioInfo,
-                          [key]: e.target.value,
-                        })
-                      }
-                      readOnly={!editMode}
-                      className={`w-full border border-gray-300 rounded-md p-2 text-sm sm:text-base ${
-                        editMode
-                          ? "bg-white"
-                          : "bg-gray-100 cursor-not-allowed"
-                      }`}
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
+  {/* Studio Info Card */}
+  <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md space-y-4">
+    <h2 className="text-lg sm:text-xl font-semibold">Studio Information</h2>
 
-            {/* Preferences Card */}
-            <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md space-y-4 max-w-full">
-              <h2 className="text-lg sm:text-xl font-semibold">
-                System Preferences
-              </h2>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={darkMode}
-                  onChange={() => setDarkMode(!darkMode)}
-                  className="w-5 h-5"
-                />
-                <span>Enable Dark Mode</span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={autoBackup}
-                  onChange={() => setAutoBackup(!autoBackup)}
-                  className="w-5 h-5"
-                />
-                <span>Automatically backup data daily</span>
-              </label>
-              <div>
-                <label className="block font-semibold mb-1">Time Zone</label>
-                <select
-                  value={timeZone}
-                  onChange={(e) => setTimeZone(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md p-2"
-                >
-                  <option>Asia/Kolkata (IST)</option>
-                  <option>America/New_York (EST)</option>
-                  <option>Europe/London (GMT)</option>
-                </select>
-              </div>
-              <div>
-                <label className="block font-semibold mb-1">Date Format</label>
-                <select
-                  value={dateFormat}
-                  onChange={(e) => setDateFormat(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md p-2"
-                >
-                  <option>DD/MM/YYYY</option>
-                  <option>MM/DD/YYYY</option>
-                  <option>YYYY-MM-DD</option>
-                </select>
-              </div>
-            </div>
-          </>
+    {/* Logo Upload */}
+    <div className="flex flex-col items-center gap-3">
+      <div
+        className="w-20 h-20 rounded-full border border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50 cursor-pointer hover:scale-105 transition-transform duration-200"
+        onClick={() => editMode && document.getElementById("logoUpload").click()}
+      >
+        {tempStudioInfo.logo ? (
+          <img
+            src={tempStudioInfo.logo}
+            alt="Studio Logo"
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <span className="text-gray-400 text-sm">No Logo</span>
         )}
+      </div>
 
-        {/* Branding Tab */}
-        {activeTab === "branding" && (
-          <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md">
-            <h2 className="text-lg sm:text-xl font-semibold mb-4">Branding</h2>
-            <p className="text-gray-600">(Branding settings to be added here)</p>
+      {/* Hidden File Input */}
+      {editMode && (
+        <input
+          type="file"
+          id="logoUpload"
+          accept="image/png, image/jpeg"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files[0];
+            if (file) {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                setTempStudioInfo({
+                  ...tempStudioInfo,
+                  logo: reader.result,
+                });
+              };
+              reader.readAsDataURL(file);
+            }
+          }}
+        />
+      )}
+      {editMode && <p className="text-xs text-gray-500">Click logo to change</p>}
+    </div>
+
+    {/* Studio Info Fields */}
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 min-w-0">
+      {Object.keys(tempStudioInfo)
+        .filter((key) => key !== "logo") // Logo ko skip karo
+        .map((key) => (
+          <div key={key} className="min-w-0">
+            <label className="font-semibold block mb-1 capitalize">
+              {key}
+            </label>
+            <input
+              type="text"
+              value={tempStudioInfo[key]}
+              onChange={(e) =>
+                setTempStudioInfo({
+                  ...tempStudioInfo,
+                  [key]: e.target.value,
+                })
+              }
+              readOnly={!editMode}
+              className={`w-full border border-gray-300 rounded-md p-2 text-sm sm:text-base ${
+                editMode ? "bg-white" : "bg-gray-100 cursor-not-allowed"
+              }`}
+            />
           </div>
+        ))}
+    </div>
+  </div>
+
+  {/* Preferences Card */}
+  <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md space-y-4 max-w-full">
+    <h2 className="text-lg sm:text-xl font-semibold">System Preferences</h2>
+    <label className="flex items-center gap-3 cursor-pointer">
+      <input
+        type="checkbox"
+        checked={darkMode}
+        onChange={() => setDarkMode(!darkMode)}
+        className="w-5 h-5"
+      />
+      <span>Enable Dark Mode</span>
+    </label>
+    <label className="flex items-center gap-3 cursor-pointer">
+      <input
+        type="checkbox"
+        checked={autoBackup}
+        onChange={() => setAutoBackup(!autoBackup)}
+        className="w-5 h-5"
+      />
+      <span>Automatically backup data daily</span>
+    </label>
+    <div>
+      <label className="block font-semibold mb-1">Time Zone</label>
+      <select
+        value={timeZone}
+        onChange={(e) => setTimeZone(e.target.value)}
+        className="w-full border border-gray-300 rounded-md p-2"
+      >
+        <option>Asia/Kolkata (IST)</option>
+        <option>America/New_York (EST)</option>
+        <option>Europe/London (GMT)</option>
+      </select>
+    </div>
+    <div>
+      <label className="block font-semibold mb-1">Date Format</label>
+      <select
+        value={dateFormat}
+        onChange={(e) => setDateFormat(e.target.value)}
+        className="w-full border border-gray-300 rounded-md p-2"
+      >
+        <option>DD/MM/YYYY</option>
+        <option>MM/DD/YYYY</option>
+        <option>YYYY-MM-DD</option>
+      </select>
+    </div>
+  </div>
+</>
+
         )}
+
+    
+
 
         {/* Notifications Tab */}
         {activeTab === "notifications" && (
