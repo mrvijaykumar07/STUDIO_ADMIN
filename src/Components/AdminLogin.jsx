@@ -1,24 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import { loginSuccess } from "../store/authSlice"
+import { useDispatch, useSelector } from "react-redux";
+import { loginSuccess } from "../store/authSlice";
 import { FcGoogle } from "react-icons/fc";
-import { useSelector } from "react-redux";
-import { useEffect } from "react";
-const BASE_URL =
-  "https://studio-crm-management-backend-370155981157.asia-south1.run.app";
+
+const BASE_URL = import.meta.env.VITE_API_BASE; // env variable
 
 const AdminLogin = () => {
-  const dispatch = useDispatch(); // Redux dispatch
-
+  const dispatch = useDispatch();
   const { isAuthenticated } = useSelector((state) => state.auth);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/dashboard", { replace: true }); // replace lagao taaki back button se login page na aaye
-    }
-  }, [isAuthenticated, navigate]);
 
   const [isRegister, setIsRegister] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -31,6 +22,12 @@ const AdminLogin = () => {
     role: "super_admin",
   });
 
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -40,7 +37,7 @@ const AdminLogin = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(`${BASE_URL}/api/v1/auth/register`, {
+      const res = await fetch(`${BASE_URL}/v1/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -65,7 +62,7 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
-      const res = await fetch(`${BASE_URL}/api/v1/auth/login`, {
+      const res = await fetch(`${BASE_URL}/v1/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -78,7 +75,6 @@ const AdminLogin = () => {
       console.log("Login API Response:", data);
 
       if (data.success) {
-        // Store in Redux
         dispatch(
           loginSuccess({
             user: data.data.user,
@@ -87,13 +83,10 @@ const AdminLogin = () => {
           })
         );
 
-        // Store in localStorage
         localStorage.setItem("accessToken", data.data.tokens.accessToken);
         localStorage.setItem("refreshToken", data.data.tokens.refreshToken);
         localStorage.setItem("isLoggedIn", "true");
         localStorage.setItem("user", JSON.stringify(data.data.user));
-
-        // ✅ navigate ko turant mat call karo, Redux state change ke baad redirect karna better hai
       } else {
         alert(data.message || "Login failed");
       }
@@ -108,7 +101,7 @@ const AdminLogin = () => {
   // Google Login
   const handleGoogleLogin = async () => {
     try {
-      const res = await fetch(`${BASE_URL}/api/v1/auth/google`);
+      const res = await fetch(`${BASE_URL}/v1/auth/google`);
       const data = await res.json();
       if (data.success) {
         window.location.href = data.data.authUrl;

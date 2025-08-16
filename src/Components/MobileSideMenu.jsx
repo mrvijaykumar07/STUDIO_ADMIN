@@ -1,4 +1,9 @@
 import React from "react";
+
+import { useSelector } from "react-redux";
+
+import studioLogo from '../assets/images/studioLogo2.png'; // default logo
+
 import { NavLink, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { logout } from "../store/authSlice"; // ✅ import logout action
@@ -19,9 +24,17 @@ const MobileSideMenu = ({ onClose }) => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const isLoggedIn = true; // Can also get from Redux
-  const currentUser = { name: "FM Studio", email: "FMmanagement@gmail.com" };
-  const profileImage = null;
+
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const profileImage = user?.profileImage;
+  const currentUser = user;
+
+
+
+
+  // const isLoggedIn = true; 
+ 
+
 
   const menuItems = [
     { name: "Dashboard", icon: <FaTachometerAlt />, path: "/dashboard" },
@@ -43,25 +56,40 @@ const MobileSideMenu = ({ onClose }) => {
   };
 
   return (
-    <div className="flex flex-col h-full w-full overflow-x-hidden">
-      {/* Profile */}
-      <div className="p-6 bg-gradient-to-r from-[#958fa5] to-[#9b9d9d] text-white shadow-md flex flex-col items-center w-full">
-        <div className="w-20 h-20 mb-3 bg-white rounded-full flex items-center justify-center overflow-hidden shadow-md">
-          {profileImage ? (
-            <img src={profileImage} alt="" className="w-full h-full object-cover rounded-full" />
-          ) : (
-            <FaUser size={40} className="text-black" />
-          )}
-        </div>
-        {isLoggedIn ? (
-          <>
-            <h2 className="font-semibold text-base">{currentUser?.name}</h2>
-            <p className="text-sm">{currentUser?.email}</p>
-          </>
-        ) : (
-          <button className="text-base font-semibold underline">Login / Signup</button>
-        )}
-      </div>
+ <div className="flex flex-col h-full w-full overflow-x-hidden">
+  {/* Profile Card */}
+  <div className="p-6 bg-gradient-to-r from-[#958fa5] to-[#9b9d9d] text-white shadow-md flex flex-col items-center w-full ">
+    <div className="w-20 h-20 mb-3 bg-white rounded-full flex items-center justify-center overflow-hidden shadow-md">
+      {isAuthenticated ? (
+        <img
+          src={profileImage || studioLogo} // profileImage hai to show karo, nahi to default studioLogo
+          alt="Profile"
+          className="w-full h-full object-cover rounded-full"
+          onError={(e) => {
+            e.target.style.display = "none";
+          }}
+        />
+      ) : (
+        <FaUser size={40} className="text-black" />
+      )}
+    </div>
+
+    {isAuthenticated ? (
+      <>
+        <h2 className="font-semibold text-base mb-1">{"StudioBandhan"}</h2>
+        <p className="text-sm">{currentUser?.email || "No Email"}</p>
+      </>
+    ) : (
+      <button
+        onClick={handleLogin}
+        className="text-base font-semibold underline"
+      >
+        Login / Signup
+      </button>
+    )}
+  </div>
+
+
 
       {/* Menu */}
       <div className="flex-1 overflow-y-auto p-3 space-y-1 w-full">

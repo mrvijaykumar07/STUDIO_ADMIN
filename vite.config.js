@@ -7,4 +7,13 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://studio-crm-management-backend-370155981157.asia-south1.run.app',
+        changeOrigin: true,
+        secure: true,
+      },
+    },
+  },
 })

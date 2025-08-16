@@ -11,7 +11,7 @@ const Navbar = () => {
       <div className="flex items-center justify-between px-4 py-2">
         {/* Logo */}
         <Link to="/" className="text-2xl font-extrabold text-pink-500">
-          FM Studio
+          StudioBandhan
         </Link>
 
         {/* Mobile Menu Button */}
