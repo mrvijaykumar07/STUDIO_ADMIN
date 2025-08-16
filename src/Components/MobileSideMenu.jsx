@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { logout } from "../store/AuthSlice"; // ✅ import logout action
+import { logout } from "../store/authSlice"; // ✅ import logout action
 import {
   FaUser,
   FaTachometerAlt,

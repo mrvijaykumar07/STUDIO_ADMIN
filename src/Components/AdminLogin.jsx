@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-import { loginSuccess } from "../store/AuthSlice";
+import { loginSuccess } from "../store/authSlice"
 import { FcGoogle } from "react-icons/fc";
 import { useSelector } from "react-redux";
 import { useEffect } from "react";
