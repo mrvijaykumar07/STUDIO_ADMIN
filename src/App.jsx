@@ -5,7 +5,7 @@ import { loginSuccess } from "./store/authSlice";
 
 import MainLayout from "./Dashboard/MainLayout";
 import LeadManagementPage from "./Pages/LeadManagementPage";
-import ClientEventsPage from "./Pages/ClientEventsPage";
+import ClientEventsPage from "./Pages/clientEventPage/ClientEventsPage";
 import AgreementsPage from "./Pages/AgreementsPage";
 import PaymentsPage from "./Pages/PaymentsPage";
 import QRPhotoSharingPage from "./Pages/QRPhotoSharingPage";
@@ -14,10 +14,12 @@ import UserManagementPage from "./Pages/UserManagementPage";
 import SettingsPage from "./Pages/SettingsPage";
 import DashboardPage from "./Pages/DashboardPage";
 import AdminLogin from "./Components/AdminLogin";
+import ClientCreatePage from "./Pages/clientEventPage/ClientCreatePage";
+import EventCreatePage from "./Pages/clientEventPage/EventCreatePage";
+import EventDetailsPage from "./Pages/clientEventPage/EventDetailsPage";
 
 function App() {
   const dispatch = useDispatch();
-
 
   const { isAuthenticated } = useSelector((state) => state.auth);
 
@@ -44,19 +46,30 @@ function App() {
       <Route
         path="/"
         element={
-          isAuthenticated ? <Navigate to="/dashboard" replace /> : <AdminLogin />
+          isAuthenticated ? (
+            <Navigate to="/dashboard" replace />
+          ) : (
+            <AdminLogin />
+          )
         }
       />
 
       {/* Protected Dashboard Routes */}
       <Route
-        element={
-          isAuthenticated ? <MainLayout /> : <Navigate to="/" replace />
-        }
+        element={isAuthenticated ? <MainLayout /> : <Navigate to="/" replace />}
       >
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/lead-management" element={<LeadManagementPage />} />
         <Route path="/client-events" element={<ClientEventsPage />} />
+
+        <Route path="/clients/create" element={<ClientCreatePage />} />
+        <Route path="/events/create" element={<EventCreatePage />} />
+
+        <Route path="/clients/edit/:clientId" element={<ClientCreatePage />} />
+        <Route path="/events/edit/:clientId" element={<EventCreatePage/>} />
+
+<Route path="/events/details/:id" element={<EventDetailsPage/>} />
+
         <Route path="/agreements" element={<AgreementsPage />} />
         <Route path="/payments" element={<PaymentsPage />} />
         <Route path="/qr-photo-sharing" element={<QRPhotoSharingPage />} />

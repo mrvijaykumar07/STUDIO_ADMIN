@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { loginSuccess } from "../store/authSlice";
 import { FcGoogle } from "react-icons/fc";
-
-const BASE_URL = import.meta.env.VITE_API_BASE; // env variable
+import api from "../utils/axios"
 
 const AdminLogin = () => {
   const dispatch = useDispatch();
@@ -32,17 +31,14 @@ const AdminLogin = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Register
+  // 🔹 Register
   const handleRegister = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const res = await fetch(`${BASE_URL}/v1/auth/register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
-      const data = await res.json();
+      const res = await api.post("/v1/auth/register", form);
+      const data = res.data;
+
       if (data.success) {
         alert("Registration successful! Please login.");
         setIsRegister(false);
@@ -56,22 +52,18 @@ const AdminLogin = () => {
     setLoading(false);
   };
 
-  // Login
+  // 🔹 Login
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const res = await fetch(`${BASE_URL}/v1/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: form.email,
-          password: form.password,
-        }),
+      const res = await api.post("/v1/auth/login", {
+        email: form.email,
+        password: form.password,
       });
 
-      const data = await res.json();
+      const data = res.data;
       console.log("Login API Response:", data);
 
       if (data.success) {
@@ -98,11 +90,11 @@ const AdminLogin = () => {
     setLoading(false);
   };
 
-  // Google Login
+  // 🔹 Google Login
   const handleGoogleLogin = async () => {
     try {
-      const res = await fetch(`${BASE_URL}/v1/auth/google`);
-      const data = await res.json();
+      const res = await api.get("/v1/auth/google");
+      const data = res.data;
       if (data.success) {
         window.location.href = data.data.authUrl;
       }
