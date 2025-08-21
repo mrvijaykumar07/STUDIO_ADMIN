@@ -58,7 +58,7 @@ const Sidebar = () => {
   ];
 
   return (
-    <aside className="bg-white text-black w-64 p-4 space-y-2 hidden md:block border-r">
+    <aside className="bg-white text-black w-64 p-4 space-y-2 border-r fixed top-0 left-0 h-screen overflow-y-auto z-20">
       {/* Profile Card */}
       <div className="relative p-4 px-2 pt-1 rounded-xl bg-gradient-to-r from-[#958fa5] to-[#9b9d9d] text-white shadow-md h-36 flex flex-col items-center">
         <div className="w-16 h-16 my-1.5 bg-white rounded-full flex items-center justify-center overflow-hidden">

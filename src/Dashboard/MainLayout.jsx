@@ -13,7 +13,7 @@ const MainLayout = () => {
         <Sidebar />
 
         {/* Main Content Area */}
-        <div className="flex-1 p-4 mt-4"> 
+        <div className="flex-1 p-4 mt-4 ml-64">
           {/* mt-4 => Navbar ke baad gap */}
           <Outlet />
         </div>

@@ -1,278 +1,152 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import React, { useState } from "react";
 import api from "../../utils/axios";
 
-const ClientCreatePage = () => {
-  const navigate = useNavigate();
-  const { clientId } = useParams();
+const ClientCreatePage = ({ onSuccess }) => {
+  // ---------------- Individual States ----------------
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [alternatePhone, setAlternatePhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [gender, setGender] = useState("");
 
-  // ✅ Default state
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    phone: "",
-    address: {
-      street: "",
-      city: "",
-      state: "",
-      zipCode: "",
-      country: "",
-    },
-    email: "",
-    alternatePhone: "",
-    dateOfBirth: "",
-    gender: "",
-  });
+  const [street, setStreet] = useState("");
+  const [city, setCity] = useState("");
+  const [stateAddr, setStateAddr] = useState("");
+  const [zipCode, setZipCode] = useState("");
+  const [country, setCountry] = useState("");
 
-  const [showOptional, setShowOptional] = useState(false);
-
-  // ✅ Edit mode data fetch
-  useEffect(() => {
-    if (!clientId) return;
-
-    let ignore = false;
-    const fetchClientById = async () => {
-      try {
-        const res = await api.get(`/v1/clients/${clientId}`);
-
-        if (!ignore && res.data?.success) {
-          const client = res.data.data; // ✅ actual client object
-
-          setFormData({
-            firstName: client.firstName || "",
-            lastName: client.lastName || "",
-            phone: client.phone || "",
-            address: {
-              street: client.address?.street || "",
-              city: client.address?.city || "",
-              state: client.address?.state || "",
-              zipCode: client.address?.zipCode || "",
-              country: client.address?.country || "",
-            },
-            email: client.email || "",
-            alternatePhone: client.alternatePhone || "",
-            dateOfBirth: client.dateOfBirth || "",
-            gender: client.gender || "",
-          });
-        }
-      } catch (error) {
-        console.error("❌ Error fetching client:", error);
-      }
-    };
-
-    fetchClientById();
-
-    return () => {
-      ignore = true;
-    };
-  }, [clientId]);
-
-  // ✅ Handle input changes
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-
-    if (name.startsWith("address.")) {
-      const field = name.split(".")[1];
-      setFormData((prev) => ({
-        ...prev,
-        address: {
-          ...prev.address,
-          [field]: value,
-        },
-      }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
-  };
-
-  // ✅ Submit handler
+  // ---------------- Submit ----------------
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Required validation
-    if (
-      !formData.firstName ||
-      !formData.lastName ||
-      !formData.phone ||
-      !formData.address.street ||
-      !formData.address.city ||
-      !formData.address.state ||
-      !formData.address.zipCode ||
-      !formData.address.country
-    ) {
+    if (!firstName || !lastName || !phone || !street || !city) {
       alert("⚠️ Please fill all required fields");
       return;
     }
 
-    try {
-      if (clientId) {
-        await api.put(`/v1/clients/${clientId}`, formData);
-        alert("✅ Client updated successfully");
-      } else {
-        await api.post("/v1/clients", formData);
-        alert("✅ Client created successfully");
-      }
+const payload = {
+  firstName,
+  lastName,
+  phone,
+  alternatePhone: alternatePhone || undefined,
+  email: email || undefined,
+  dateOfBirth: dateOfBirth || undefined,
+  gender: gender || undefined,   // ❌ empty string mat bhejo
+  address: {
+    street,
+    city,
+    state: stateAddr || undefined, // ❌ empty string bhejne se schema error aata hai
+    zipCode: zipCode || undefined,
+    country: country || undefined,
+  },
+};
 
-      navigate("/client-events");
+
+    console.log("Submitting payload:", payload);
+
+    try {
+      const res = await api.post("/v1/clients", payload);
+      if (res.data?.success) {
+        alert("✅ Client created successfully!");
+        if (onSuccess) onSuccess(); // ✅ parent ko notify karo
+      } else {
+        alert("❌ Something went wrong while saving client.");
+      }
     } catch (error) {
-      console.error("❌ Error saving client:", error);
-      alert(error.response?.data?.message || "Error saving client");
+      console.error("❌ Error creating client:", error);
+      alert(error.response?.data?.message || "Error creating client");
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-md">
-      <h2 className="text-2xl font-bold mb-4 text-gray-800">
-        {clientId ? "Edit Client" : "Create New Client"}
+    <div className="max-w-4xl mx-auto bg-white rounded-xl p-2">
+      <h2 className="text-2xl font-bold mb-1 text-gray-800">
+        Create New Client
       </h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Required Fields */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <form onSubmit={handleSubmit} className="space-y-2 md:space-y-4">
+        {/* Name */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4">
           <input
             type="text"
-            name="firstName"
-            value={formData.firstName}
-            onChange={handleChange}
+            value={firstName}
+            onChange={(e) => setFirstName(e.target.value)}
             placeholder="First Name *"
-            className="border p-2 rounded-md w-full"
-            required
+            className="border p-2 rounded-md w-full text-sm"
           />
           <input
             type="text"
-            name="lastName"
-            value={formData.lastName}
-            onChange={handleChange}
+            value={lastName}
+            onChange={(e) => setLastName(e.target.value)}
             placeholder="Last Name *"
-            className="border p-2 rounded-md w-full"
-            required
+            className="border p-2 rounded-md w-full text-sm"
+          />
+        </div>
+
+        {/* Contact Info */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4">
+          <input
+            type="text"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="Phone *"
+            className="border p-2 rounded-md w-full text-sm"
           />
           <input
             type="text"
-            name="phone"
-            value={formData.phone}
-            onChange={handleChange}
-            placeholder="Phone *"
-            className="border p-2 rounded-md w-full"
-            required
+            value={alternatePhone}
+            onChange={(e) => setAlternatePhone(e.target.value)}
+            placeholder="Alternate Phone (optional)"
+            className="border p-2 rounded-md w-full text-sm"
+          />
+          <input
+            type="text"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email (optional)"
+            className="border p-2 rounded-md w-full text-sm"
           />
         </div>
 
         {/* Address */}
-        <h3 className="text-lg font-semibold mt-4 text-gray-700">Address *</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-2 md:gap-4">
           <input
             type="text"
-            name="address.street"
-            value={formData.address.street}
-            onChange={handleChange}
+            value={street}
+            onChange={(e) => setStreet(e.target.value)}
             placeholder="Street *"
-            className="border p-2 rounded-md w-full"
-            required
+            className="border p-2 rounded-md w-full text-sm"
           />
           <input
             type="text"
-            name="address.city"
-            value={formData.address.city}
-            onChange={handleChange}
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
             placeholder="City *"
-            className="border p-2 rounded-md w-full"
-            required
+            className="border p-2 rounded-md w-full text-sm"
           />
           <input
             type="text"
-            name="address.state"
-            value={formData.address.state}
-            onChange={handleChange}
-            placeholder="State *"
-            className="border p-2 rounded-md w-full"
-            required
+            value={stateAddr}
+            onChange={(e) => setStateAddr(e.target.value)}
+            placeholder="State (optional)"
+            className="border p-2 rounded-md w-full text-sm"
           />
           <input
             type="text"
-            name="address.zipCode"
-            value={formData.address.zipCode}
-            onChange={handleChange}
-            placeholder="Zip Code *"
-            className="border p-2 rounded-md w-full"
-            required
-          />
-          <input
-            type="text"
-            name="address.country"
-            value={formData.address.country}
-            onChange={handleChange}
-            placeholder="Country *"
-            className="border p-2 rounded-md w-full"
-            required
+            value={zipCode}
+            onChange={(e) => setZipCode(e.target.value)}
+            placeholder="Zip Code (optional)"
+            className="border p-2 rounded-md w-full text-sm"
           />
         </div>
-
-        {/* Toggle Optional */}
-        <button
-          type="button"
-          onClick={() => setShowOptional(!showOptional)}
-          className="flex items-center gap-2 text-pink-600 font-semibold mt-4"
-        >
-          {showOptional ? (
-            <>
-              <FaChevronUp /> Hide Optional Fields
-            </>
-          ) : (
-            <>
-              <FaChevronDown /> Show Optional Fields
-            </>
-          )}
-        </button>
-
-        {/* Optional Fields */}
-        {showOptional && (
-          <div className="space-y-3 border-t pt-4 mt-2">
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Email"
-              className="border p-2 rounded-md w-full"
-            />
-            <input
-              type="text"
-              name="alternatePhone"
-              value={formData.alternatePhone}
-              onChange={handleChange}
-              placeholder="Alternate Phone"
-              className="border p-2 rounded-md w-full"
-            />
-            <input
-              type="date"
-              name="dateOfBirth"
-              value={formData.dateOfBirth}
-              onChange={handleChange}
-              placeholder="Date of Birth"
-              className="border p-2 rounded-md w-full"
-            />
-            <select
-              name="gender"
-              value={formData.gender}
-              onChange={handleChange}
-              className="border p-2 rounded-md w-full"
-            >
-              <option value="">Select Gender</option>
-              <option value="male">Male</option>
-              <option value="female">Female</option>
-              <option value="other">Other</option>
-              <option value="prefer-not-to-say">Prefer not to say</option>
-            </select>
-          </div>
-        )}
 
         {/* Submit */}
         <button
           type="submit"
-          className="bg-pink-600 text-white px-6 py-2 rounded-md hover:bg-pink-700 transition mt-4"
+          className="bg-pink-600 text-white px-6 py-2 rounded-md hover:bg-pink-700 transition mt-2 md:mt-4 w-full md:w-auto"
         >
-          {clientId ? "Update Client" : "Create Client"}
+          Create Client
         </button>
       </form>
     </div>

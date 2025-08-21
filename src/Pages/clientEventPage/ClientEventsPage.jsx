@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchClients } from "../../store/clientSlice";
-import { fetchEvents } from "../../store/eventSlice";  
+import { fetchEvents, deleteEvent } from "../../store/eventSlice";
 
+import EditEvent from "./EditEvent";
+import EditClient from "./EditClient";
 
-import {} from "react-icons/fa";
-import api from "../../utils/axios";
 import {
   FaCalendarAlt,
   FaUsers,
@@ -17,31 +17,9 @@ import {
   FaTrash,
   FaInfoCircle,
 } from "react-icons/fa";
+import ClientCreatePage from "./ClientCreatePage";
+import EventCreatePage from "./EventCreatePage";
 
-const eventsData = [
-  {
-    id: 1,
-    name: "Sharma Wedding",
-    type: "Wedding",
-    date: "Aug 15, 2025",
-    client: "Mrs. Priya Sharma",
-    location: "Taj Palace Hotel, Delhi",
-    time: "10:00 AM - 8:00 PM",
-    status: "confirmed",
-  },
-  {
-    id: 2,
-    name: "Gupta Anniversary",
-    type: "Anniversary",
-    date: "Aug 18, 2025",
-    client: "Mr. Raj Gupta",
-    location: "Home - Sector 15, Noida",
-    time: "5:00 PM - 9:00 PM",
-    status: "confirmed",
-  },
-];
-
-// Initial checklist data with completed flag for each task
 const initialChecklistsData = [
   {
     id: 1,
@@ -73,18 +51,28 @@ const ClientEventsPage = () => {
   const [activeTab, setActiveTab] = useState("calendar");
   const [checklistsData, setChecklistsData] = useState(initialChecklistsData);
 
-  const clients = useSelector((state) => state.clients.list);
-  const { events, loading } = useSelector((state) => state.events);
-  const dispatch = useDispatch();
+  const [editingClientId, setEditingClientId] = useState(null);
+  const [editingEventId, setEditingEventId] = useState(null);
 
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleDelete = async (clientId) => {
+  const [showClientForm, setShowClientForm] = useState(false);
+  const [showEventForm, setShowEventForm] = useState(false);
+
+  const clientsState = useSelector((state) => state.clients);
+  const eventsState = useSelector((state) => state.events);
+
+  const clients = clientsState?.list || [];
+  const events = eventsState?.events || [];
+  const loading = eventsState?.loading || false;
+
+  // Delete client
+  const handleDeleteClient = async (clientId) => {
     if (window.confirm("Are you sure you want to delete this client?")) {
       try {
         await api.delete(`/v1/clients/${clientId}`);
         alert("Client deleted successfully ✅");
-        // redux me se remove karna ya fir dobara fetch karna
         dispatch(fetchClients());
       } catch (error) {
         console.error("❌ Error deleting client:", error);
@@ -93,21 +81,17 @@ const ClientEventsPage = () => {
     }
   };
 
-  const handleDeleteEvent = async (eventId) => {
+  // Delete event using redux thunk
+  const handleDeleteEvent = (eventId) => {
     if (window.confirm("Are you sure you want to delete this event?")) {
-      try {
-        await api.delete(`/v1/events/${eventId}`);
-        alert("Event deleted successfully ✅");
-        // TODO: redux se fetchEvents() dispatch karo agar events redux me stored hain
-        // dispatch(fetchEvents());
-      } catch (error) {
-        console.error("❌ Error deleting event:", error);
-        alert("Failed to delete event");
-      }
+      dispatch(deleteEvent(eventId))
+        .unwrap()
+        .then(() => alert("Event deleted successfully ✅"))
+        .catch(() => alert("Failed to delete event ❌"));
     }
   };
 
-  // Toggle checkbox for a task
+  // Toggle checklist tasks
   const toggleTask = (checklistId, taskIndex) => {
     setChecklistsData((prev) =>
       prev.map((checklist) => {
@@ -122,23 +106,11 @@ const ClientEventsPage = () => {
     );
   };
 
-useEffect(() => {
-  // ✅ Events Fetch
-  if (events.length === 0) {
-    console.log("📡 Fetching events from backend...");
-    dispatch(fetchEvents());
-  }
-
-  // ✅ Clients Fetch (sirf jab Clients tab khola jaye)
-  if (activeTab === "clients" && clients.length === 0) {
-    console.log("📡 Fetching clients from backend...");
-    dispatch(fetchClients());
-  }
-}, [activeTab, dispatch]); 
-
-
-
-
+  // Fetch events and clients on load
+  useEffect(() => {
+    if (events.length === 0) dispatch(fetchEvents());
+    if (clients.length === 0) dispatch(fetchClients());
+  }, [dispatch, events.length, clients.length]);
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 space-y-6">
@@ -152,20 +124,56 @@ useEffect(() => {
 
       {/* Action Buttons */}
       <div className="flex md:flex-wrap gap-4 ">
+        {/* Event Button */}
         <button
-          className="flex items-center gap-2 bg-pink-600 text-white px-5 py-2 rounded-md hover:bg-pink-700 transition"
-          onClick={() => navigate("/events/create")}
+          className={`flex items-center gap-2 px-5 py-2 rounded-md md:text-xl text-sm transition
+            ${
+              showEventForm
+                ? "bg-gray-500 hover:bg-gray-600"
+                : "bg-pink-600 hover:bg-pink-700"
+            } text-white`}
+          onClick={() => setShowEventForm((prev) => !prev)}
         >
-          <FaPlus /> New Event
+          <FaPlus /> {showEventForm ? "Close Event Form" : "New Event"}
         </button>
 
+        {/* Client Button */}
         <button
-          className="flex items-center gap-2 bg-pink-600 text-white px-5 py-2 rounded-md hover:bg-pink-700 md:text-xl text-sm transition"
-          onClick={() => navigate("/clients/create")}
+          className={`flex items-center gap-2 px-5 py-2 rounded-md md:text-xl text-sm transition
+            ${
+              showClientForm
+                ? "bg-gray-500 hover:bg-gray-600"
+                : "bg-pink-600 hover:bg-pink-700"
+            } text-white`}
+          onClick={() => setShowClientForm((prev) => !prev)}
         >
-          <FaPlus /> New Client
+          <FaPlus /> {showClientForm ? "Close Client Form" : "New Client"}
         </button>
       </div>
+
+      {/* Inline Event Form */}
+      {showEventForm && (
+        <div className="mt-6 bg-white shadow-md p-4 rounded-md">
+          <EventCreatePage
+            onSuccess={() => {
+              setShowEventForm(false);
+              dispatch(fetchEvents());
+            }}
+          />
+        </div>
+      )}
+
+      {/* Inline Client Form */}
+      {showClientForm && (
+        <div className="mt-6 bg-white shadow-md p-4 rounded-md">
+          <ClientCreatePage
+            onSuccess={() => {
+              setShowClientForm(false);
+              dispatch(fetchClients());
+            }}
+          />
+        </div>
+      )}
 
       {/* Page Title & Description */}
       <div>
@@ -196,8 +204,7 @@ useEffect(() => {
               : "hover:text-pink-600"
           }`}
         >
-          <FaClipboardList />
-          Checklists
+          <FaClipboardList /> Checklists
         </button>
 
         <button
@@ -214,137 +221,220 @@ useEffect(() => {
 
       {/* Content */}
       <div className="mt-6">
-        {/* Calendar View placeholder */}
+        {/* Calendar / Events */}
         {activeTab === "calendar" && (
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {events.length > 0 ? (
-              events.map((event) => (
-                <div
-                  key={event._id}
-                  className="bg-white p-6 rounded-lg shadow-md"
-                >
-                  <h3 className="font-bold text-lg mb-1">{event.eventName}</h3>
-                  <p className="text-gray-700 mb-1">
-                    Type:{" "}
-                    <span className="font-semibold">{event.eventType}</span>
-                  </p>
-                  <p className="text-gray-700 mb-1">
-                    Client:{" "}
-                    <span className="font-semibold">
-                      {event.clientName || "N/A"}
-                    </span>
-                  </p>
-                  <p className="text-gray-700 mb-1">
-                    Date:{" "}
-                    <span className="font-semibold">
-                      {new Date(event.eventDate?.startDate).toLocaleString()}
-                    </span>
-                  </p>
-                  <p className="text-gray-700 mb-1">
-                    Venue:{" "}
-                    <span className="font-semibold">
-                      {event.venue?.name}, {event.venue?.address?.city || ""}
-                    </span>
-                  </p>
+              events.map((event) => {
+                const renderField = (label, value) => {
+                  if (!value) return null;
+                  return (
+                    <p>
+                      <span className="font-semibold text-gray-900">
+                        {label}:
+                      </span>{" "}
+                      {value}
+                    </p>
+                  );
+                };
 
-         <div className="flex gap-4 mt-3">
-  {/* Full Details */}
-  <button
-    className="flex items-center gap-2 bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition"
-    onClick={() => navigate(`/events/details/${event._id}`)}
-  >
-    <FaInfoCircle />
-  </button>
+                return (
+                  <div
+                    key={event._id}
+                    className="bg-white py-6 px-5 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col"
+                  >
+                    <h3 className="font-bold text-xl text-center text-gray-800 mb-4">
+                      {event.eventName}
+                    </h3>
 
-  {/* Edit */}
-  <button
-    className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
-    onClick={() => navigate(`/events/edit/${event._id}`)}
-  >
-    <FaEdit />
-  </button>
+                    <div className="space-y-2 text-gray-700">
+                      {renderField("Type", event.eventType)}
+                      {renderField("Client", event.clientName)}
 
-  {/* Delete */}
-  <button
-    className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition"
-    onClick={() => handleDeleteEvent(event._id)}
-  >
-    <FaTrash />
-  </button>
-</div>
+                      {event.eventDate?.startDate &&
+                        event.eventDate?.endDate &&
+                        renderField(
+                          "Date",
+                          `${new Date(
+                            event.eventDate.startDate
+                          ).toLocaleDateString("en-GB")} to ${new Date(
+                            event.eventDate.endDate
+                          ).toLocaleDateString("en-GB")}`
+                        )}
 
-                </div>
-              ))
+                      {event.venue?.name &&
+                        renderField("Venue Name", event.venue.name)}
+
+                      {event.venue?.address &&
+                        (event.venue.address.street ||
+                          event.venue.address.city ||
+                          event.venue.address.state ||
+                          event.venue.address.zipCode) &&
+                        renderField(
+                          "Address",
+                          [
+                            event.venue.address.street,
+                            event.venue.address.city,
+                            event.venue.address.state,
+                            event.venue.address.zipCode,
+                          ]
+                            .filter(Boolean)
+                            .join(", ")
+                        )}
+
+                      {renderField("Photographer", event.assignedPhotographer)}
+                      {renderField("Budget", event.budget?.total)}
+                      {renderField("Deposit", event.deposit?.amount)}
+                      
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex justify-center gap-6 mt-auto pt-5 text-2xl">
+                      <button
+                        className="text-gray-600 hover:text-gray-800 transition-transform duration-200 transform hover:scale-125"
+                        onClick={() => navigate(`/events/details/${event._id}`)}
+                      >
+                        <FaInfoCircle />
+                      </button>
+
+                      <button
+                        className="text-blue-600 hover:text-blue-800 transition-transform duration-200 transform hover:scale-125"
+                        onClick={() => setEditingEventId(event._id)}
+                      >
+                        <FaEdit />
+                      </button>
+
+                      <button
+                        className="text-red-600 hover:text-red-800 transition-transform duration-200 transform hover:scale-125"
+                        onClick={() => handleDeleteEvent(event._id)}
+                      >
+                        <FaTrash />
+                      </button>
+                    </div>
+
+                    {/* Inline Edit Form */}
+                    {editingEventId === event._id && (
+                      <div className="mt-4">
+                        <EditEvent
+                          eventId={editingEventId}
+                          onSuccess={() => {
+                            setEditingEventId(null);
+                            dispatch(fetchEvents());
+                          }}
+                          onCancel={() => setEditingEventId(null)}
+                        />
+                      </div>
+                    )}
+                  </div>
+                );
+              })
             ) : (
-              <p className="text-gray-600 text-center">No events found</p>
+              <p className="text-gray-600 text-center col-span-3">
+                No events found
+              </p>
             )}
           </div>
         )}
 
-        {/* Client List */}
+        {/* Clients */}
         {activeTab === "clients" && (
-          <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-6">
             {clients.length > 0 ? (
               clients.map((client) => (
                 <div
                   key={client._id}
-                  className="bg-white p-6 rounded-lg shadow-md"
+                  className="bg-white md:p-6 p-4 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col"
                 >
-                  <h3 className="font-bold text-lg mb-1">
+                  <h3 className="font-bold text-xl text-center text-gray-800 mb-4">
                     {client.firstName} {client.lastName}
                   </h3>
-                  <p className="text-gray-700 mb-1">
-                    Phone: <span className="font-semibold">{client.phone}</span>
-                  </p>
-                  <p className="text-gray-700 mb-1">
-                    Email:{" "}
-                    <span className="font-semibold">
-                      {client.email || "N/A"}
-                    </span>
-                  </p>
-                  <p className="text-gray-700 mb-1">
-                    Address:{" "}
-                    <span className="font-semibold">
-                      {client.address?.street}, {client.address?.city},{" "}
-                      {client.address?.state}, {client.address?.zipCode},{" "}
-                      {client.address?.country}
-                    </span>
-                  </p>
 
-                  <div className="flex gap-4 mt-3">
-                    {/* Call Button */}
+                  <div className="space-y-2 text-gray-700">
+                    {client.phone && (
+                      <p>
+                        <span className="font-semibold text-gray-900">
+                          Phone:
+                        </span>{" "}
+                        {client.phone}
+                      </p>
+                    )}
+                    {client.email && (
+                      <p>
+                        <span className="font-semibold text-gray-900">
+                          Email:
+                        </span>{" "}
+                        {client.email}
+                      </p>
+                    )}
+                    {client.address &&
+                      (client.address.street ||
+                        client.address.city ||
+                        client.address.state ||
+                        client.address.zipCode) && (
+                        <p>
+                          <span className="font-semibold text-gray-900">
+                            Address:
+                          </span>{" "}
+                          {[
+                            client.address.street,
+                            client.address.city,
+                            client.address.state,
+                            client.address.zipCode,
+                          ]
+                            .filter(Boolean)
+                            .join(", ")}
+                        </p>
+                      )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex justify-center gap-6 mt-auto pt-5 text-2xl">
                     <button
-                      className="flex items-center gap-2 bg-pink-600 text-white px-4 py-2 rounded-md hover:bg-pink-700 transition"
+                      className="text-green-600 hover:text-green-800 transition-transform duration-200 transform hover:scale-125"
                       onClick={() => alert(`Calling ${client.phone}`)}
                     >
                       <FaPhone />
                     </button>
 
-                    {/* Edit Button */}
                     <button
-                      className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
-                      onClick={() => navigate(`/clients/edit/${client._id}`)} // 👈 navigate with id
+                      className="text-blue-600 hover:text-blue-800 transition-transform duration-200 transform hover:scale-125"
+                      onClick={() => setEditingClientId(client._id)}
                     >
                       <FaEdit />
                     </button>
 
-                    {/* Delete Button */}
                     <button
-                      className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition"
-                      onClick={() => handleDelete(client._id)}
+                      className="text-red-600 hover:text-red-800 transition-transform duration-200 transform hover:scale-125"
+                      onClick={() => handleDeleteClient(client._id)}
                     >
                       <FaTrash />
                     </button>
                   </div>
+
+                  {/* Inline Edit Form */}
+                  {editingClientId === client._id && (
+                    <div className="mt-4">
+                      <EditClient
+                        clientId={editingClientId}
+                        onSuccess={() => {
+                          setEditingClientId(null);
+                          dispatch(fetchClients());
+                        }}
+                        onCancel={() => setEditingClientId(null)}
+                      />
+                    </div>
+                  )}
                 </div>
               ))
             ) : (
-              <p className="text-gray-600 text-center">No clients found</p>
+              <p className="text-gray-600 text-center col-span-3">
+                No clients found
+              </p>
             )}
           </div>
         )}
 
-        {/* Event Checklists */}
+        {/* Checklists */}
         {activeTab === "checklists" && (
           <div className="space-y-6">
             {checklistsData.map((checklist) => {
