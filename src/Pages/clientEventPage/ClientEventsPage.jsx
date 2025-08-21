@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchClients } from "../../store/clientSlice";
 import { fetchEvents, deleteEvent } from "../../store/eventSlice";
-
+import { deleteClient, fetchClients } from "../../store/clientSlice";
 import EditEvent from "./EditEvent";
 import EditClient from "./EditClient";
 
@@ -68,18 +67,17 @@ const ClientEventsPage = () => {
   const loading = eventsState?.loading || false;
 
   // Delete client
-  const handleDeleteClient = async (clientId) => {
-    if (window.confirm("Are you sure you want to delete this client?")) {
-      try {
-        await api.delete(`/v1/clients/${clientId}`);
+const handleDeleteClient = (clientId) => {
+  if (window.confirm("Are you sure you want to delete this client?")) {
+    dispatch(deleteClient(clientId))
+      .unwrap()
+      .then(() => {
         alert("Client deleted successfully ✅");
-        dispatch(fetchClients());
-      } catch (error) {
-        console.error("❌ Error deleting client:", error);
-        alert("Failed to delete client");
-      }
-    }
-  };
+        dispatch(fetchClients()); // Optional: refresh client list
+      })
+      .catch(() => alert("Failed to delete client ❌"));
+  }
+};
 
   // Delete event using redux thunk
   const handleDeleteEvent = (eventId) => {
@@ -289,7 +287,7 @@ const ClientEventsPage = () => {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex justify-center gap-6 mt-auto pt-5 text-2xl">
+                    <div className="flex justify-center gap-10 mt-auto pt-5 text-2xl">
                       <button
                         className="text-gray-600 hover:text-gray-800 transition-transform duration-200 transform hover:scale-125"
                         onClick={() => navigate(`/events/details/${event._id}`)}
@@ -388,7 +386,7 @@ const ClientEventsPage = () => {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex justify-center gap-6 mt-auto pt-5 text-2xl">
+                  <div className="flex justify-center gap-10 mt-auto pt-5 text-2xl">
                     <button
                       className="text-green-600 hover:text-green-800 transition-transform duration-200 transform hover:scale-125"
                       onClick={() => alert(`Calling ${client.phone}`)}
