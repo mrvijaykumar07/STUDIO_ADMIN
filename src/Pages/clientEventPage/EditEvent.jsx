@@ -103,7 +103,7 @@ const EditEvent = ({ eventId, onSuccess, onCancel }) => {
   return (
     <AnimatePresence>
       <motion.div
-        className="fixed inset-0 bg-transparent flex items-center justify-center z-50 md:static md:flex-none"
+        className="fixed inset-0  flex items-center justify-center z-50 md:static md:flex-none"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -113,7 +113,7 @@ const EditEvent = ({ eventId, onSuccess, onCancel }) => {
           animate={{ y: 0, opacity: 1, scale: 1 }}
           exit={{ y: 50, opacity: 0, scale: 0.95 }}
           transition={{ duration: 0.3 }}
-          className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-screen overflow-y-auto md:rounded-none md:shadow-none md:max-w-none md:fixed md:right-0 md:top-0 md:h-screen md:w-4/5"
+          className="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-screen overflow-y-auto md:rounded-none md:shadow-none md:max-w-none md:fixed md:right-0 md:top-0 md:h-screen md:w-[80vw]"
         >
        
 

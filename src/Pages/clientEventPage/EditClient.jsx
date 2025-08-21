@@ -97,7 +97,7 @@ const EditClient = ({ clientId, onSuccess, onCancel }) => {
           className="
             bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-screen overflow-y-auto 
             md:rounded-none md:shadow-none md:max-w-none 
-            md:fixed md:right-0 md:top-0 md:h-screen md:w-4/5
+            md:fixed md:right-0 md:top-0 md:h-screen md:w-[80vw]
           "
         >
        <div className="sticky top-0 bg-white p-4 border-b z-10 flex items-center justify-between">
